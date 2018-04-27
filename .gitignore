@@ -2,3 +2,7 @@
 *.su
 *.bin
 *.elf
+build/
+doc/
+.settings/
+rn1host

@@ -7,7 +7,7 @@
 	Maintainer: Antti Alhonen <antti.alhonen@iki.fi>
 
 	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License version 2, as 
+	it under the terms of the GNU General Public License version 2, as
 	published by the Free Software Foundation.
 
 	This program is distributed in the hope that it will be useful,
@@ -151,7 +151,7 @@ tof3d_scan_t* get_tof3d()
 	{
 		return 0;
 	}
-	
+
 	tof3d_scan_t* ret = &tof3ds[tof3d_rd];
 	tof3d_rd++; if(tof3d_rd >= TOF3D_RING_BUF_LEN) tof3d_rd = 0;
 	return ret;
@@ -164,7 +164,7 @@ pulutof_frame_t* get_pulutof_frame()
 	{
 		return 0;
 	}
-	
+
 	pulutof_frame_t* ret = &pulutof_ringbuf[pulutof_ringbuf_rd];
 	pulutof_ringbuf_rd++; if(pulutof_ringbuf_rd >= PULUTOF_RINGBUF_LEN) pulutof_ringbuf_rd = 0;
 	return ret;
@@ -188,8 +188,7 @@ typedef struct
 /*
 	Pixel coordinates
 */
-static const geocal_point_t lens_quadrant_coords[GEOCAL_N_Y+1][GEOCAL_N_X+1] =
-{
+static const geocal_point_t lens_quadrant_coords[GEOCAL_N_Y + 1][GEOCAL_N_X + 1] = {
 	{ { 12,   2,   50.0, 25.0}, { 19,   1,   45.0, 25.0}, { 28,   0,   40.0, 25.0}, { 43,  -1,   30.0, 25.0}, { 62,  -2,   15.0, 25.0}, { 80,  -2,   0, 25.0} },
 	{ { 11,   5,   50.0, 22.5}, { 19,   4,   45.0, 22.5}, { 27,   3,   40.0, 22.5}, { 42,   2,   30.0, 22.5}, { 62,   1,   15.0, 22.5}, { 80,   1,   0, 22.5} },
 	{ { 11,   8,   50.0, 20.0}, { 19,   6,   45.0, 20.0}, { 27,   6,   40.0, 20.0}, { 42,   5,   30.0, 20.0}, { 62,   4,   15.0, 20.0}, { 80,   4,   0, 20.0} },
@@ -244,14 +243,14 @@ typedef struct
 	float y_rel_robot;          // zero = robot origin. Positive = to the right of the robot
 	float ang_rel_robot;        // zero = robot forward direction. positive = ccw
 	float vert_ang_rel_ground;  // zero = looks directly forward. positive = looks up. negative = looks down
-	float z_rel_ground;         // sensor height from the ground	
+	float z_rel_ground;         // sensor height from the ground
 } sensor_mount_t;
 
 #define NUM_PULUTOFS 4
 
 #ifdef PULUTOF_ROBOT_SER_1_TO_4  // Retrofitted sensors
 static const sensor_mount_t sensor_mounts[NUM_PULUTOFS] =
-{          //      mountmode    x     y       hor ang           ver ang      height    
+{          //      mountmode    x     y       hor ang           ver ang      height
  /*0: Left rear      */ { 2,  -276,  -233, DEGTORAD(      90), DEGTORAD(  0), 227 },
  /*1: Right rear     */ { 1,  -276,   233, DEGTORAD(     270), DEGTORAD(  0), 227 },
  /*2: Right front    */ { 2,   154,   164, DEGTORAD(       0), DEGTORAD(  0), 228 },
@@ -261,7 +260,7 @@ static const sensor_mount_t sensor_mounts[NUM_PULUTOFS] =
 
 #ifdef PULUTOF_ROBOT_SER_5_UP
 static const sensor_mount_t sensor_mounts[NUM_PULUTOFS] =
-{          //      mountmode    x     y       hor ang           ver ang      height    
+{          //      mountmode    x     y       hor ang           ver ang      height
  /*0: Left rear      */ { 2,  -183,  -218, DEGTORAD(90  + 30), DEGTORAD( 0), 234 },
  /*1: Right rear     */ { 1,  -183,   218, DEGTORAD(270 - 30), DEGTORAD( 0), 234 },
  /*2: Right front    */ { 1,   138,   115, DEGTORAD(     -10), DEGTORAD(10), 170 },
@@ -277,18 +276,16 @@ static int16_t hmap_calib_cnt[TOF3D_HMAP_XSPOTS][TOF3D_HMAP_YSPOTS];
 static int16_t hmap_calib[TOF3D_HMAP_XSPOTS][TOF3D_HMAP_YSPOTS];
 int16_t hmap_avgd[TOF3D_HMAP_XSPOTS][TOF3D_HMAP_YSPOTS];
 
-static void distances_to_objmap(pulutof_frame_t *in)
-{
+static void distances_to_objmap(pulutof_frame_t *in) {
 	int sidx = in->sensor_idx;
-	if(sidx > NUM_PULUTOFS-1)
-	{
+	if (sidx > NUM_PULUTOFS - 1) {
 		printf("WARNING: distances_to_objmap: illegal sensor idx coming from hw.\n");
 		return;
 	}
 
 	/*
 		for converting to absolute world coordinates, if that's needed in the future:
-	
+
 	float robot_ang = ANG32TORAD(in->robot_pos.ang);
 	float robot_x = in->robot_pos.x;
 	float robot_y = in->robot_pos.y;
@@ -303,44 +300,37 @@ static void distances_to_objmap(pulutof_frame_t *in)
 	float sensor_y = sensor_mounts[sidx].y_rel_robot;
 	float sensor_yang = sensor_mounts[sidx].vert_ang_rel_ground;
 	float sensor_z = sensor_mounts[sidx].z_rel_ground;
-	
 	int do_send_pointcloud = send_pointcloud;
 
 
-	for(int pyy = 1; pyy < TOF_YS-1; pyy++)
+
+	for (int pyy = 1; pyy < TOF_YS - 1; pyy++) {
 //	for(int pyy = 25; pyy < 35; pyy++)
-	{
-		for(int pxx = 1; pxx < TOF_XS-1; pxx++)
+
+		for (int pxx = 1; pxx < TOF_XS - 1; pxx++) {
 //		for(int pxx = 75; pxx < 85; pxx++)
-		{
+
 			int n_valids = 0;
 			int avg = 0;
-			for(int dyy=-1; dyy<=1; dyy++)
-			{
-				for(int dxx=-1; dxx<=1; dxx++)
-				{
-					int dist = in->depth[(pyy+dyy)*TOF_XS+(pxx+dxx)];
-					if(dist != 0)
-					{
+			for (int dyy = -1; dyy <= 1; dyy++) {
+				for (int dxx = -1; dxx <= 1; dxx++) {
+					int dist = in->depth[(pyy + dyy) * TOF_XS + (pxx + dxx)];
+					if (dist != 0) {
 						n_valids++;
 						avg += dist;
 					}
 				}
 			}
 
-			if(n_valids > 4)
-			{
+			if (n_valids > 4) {
 				avg /= n_valids;
 				int n_conforming = 0;
 				int avg_conforming = 0;
 				int cumul_dxx = 0, cumul_dyy = 0;
-				for(int dyy=-1; dyy<=1; dyy++)
-				{
-					for(int dxx=-1; dxx<=1; dxx++)
-					{
-						int dist = in->depth[(pyy+dyy)*TOF_XS+(pxx+dxx)];
-						if(dist != 0 && dist > avg-350 && dist < avg+350)
-						{
+				for (int dyy = -1; dyy <= 1; dyy++) {
+					for (int dxx = -1; dxx <= 1; dxx++) {
+						int dist = in->depth[(pyy + dyy) * TOF_XS + (pxx + dxx)];
+						if (dist != 0 && dist > avg - 350 && dist < avg + 350) {
 							n_conforming++;
 							avg_conforming += dist;
 							cumul_dxx += dxx;
@@ -349,49 +339,59 @@ static void distances_to_objmap(pulutof_frame_t *in)
 					}
 				}
 
-				if(n_conforming > 2)
-				{
+				if (n_conforming > 2) {
 					int py, px;
-					if(cumul_dxx < -2) px = pxx-1; else if(cumul_dxx > 2) px = pxx+1; else px = pxx;
-					if(cumul_dyy < -2) py = pyy-1; else if(cumul_dyy > 2) py = pyy+1; else py = pyy;
+					if (cumul_dxx < -2)
+						px = pxx - 1;
+					else if (cumul_dxx > 2)
+						px = pxx + 1;
+					else
+						px = pxx;
+
+					if (cumul_dyy < -2)
+						py = pyy - 1;
+					else if (cumul_dyy > 2)
+						py = pyy + 1;
+					else
+						py = pyy;
 
 					float hor_ang, ver_ang;
 
-					switch(sensor_mounts[sidx].mount_mode)
-					{
-						case 1: 
-						hor_ang = -1*y_angs[py*TOF_XS+px];
-						ver_ang = x_angs[py*TOF_XS+px];
+					switch (sensor_mounts[sidx].mount_mode) {
+						case 1:
+							hor_ang = -1 * y_angs[py * TOF_XS + px];
+							ver_ang = x_angs[py * TOF_XS + px];
 						break;
 
-						case 2: 
-						hor_ang = y_angs[py*TOF_XS+px];
-						ver_ang = -1*x_angs[py*TOF_XS+px];
+						case 2:
+							hor_ang = y_angs[py * TOF_XS + px];
+							ver_ang = -1 * x_angs[py * TOF_XS + px];
 						break;
 
 						case 3: // direction in which the original geometrical calibration was calculated in
-						hor_ang = -1*x_angs[py*TOF_XS+px];
-						ver_ang = y_angs[py*TOF_XS+px];
+							hor_ang = -1 * x_angs[py * TOF_XS + px];
+							ver_ang = y_angs[py * TOF_XS + px];
 						break;
 
 						case 4: // Same as 3, but upside down
-						hor_ang = x_angs[py*TOF_XS+px];
-						ver_ang = -1*y_angs[py*TOF_XS+px];
+							hor_ang = x_angs[py * TOF_XS + px];
+							ver_ang = -1 * y_angs[py * TOF_XS + px];
 						break;
 
-						default: printf("ERROR: illegal mount_mode in sensor mount table.\n"); return;
+						default:
+							printf("ERROR: illegal mount_mode in sensor mount table.\n");
+							return;
 					}
 
 					// From spherical to cartesian coordinates
 
-					float d = (float)avg_conforming/(float)n_conforming;
+					float d = (float) avg_conforming / (float) n_conforming;
 
-					float x = d * cos(ver_ang + sensor_yang) * cos(hor_ang + sensor_ang) + sensor_x;
-					float y = -1* (d * cos(ver_ang + sensor_yang) * sin(hor_ang + sensor_ang)) + sensor_y;
-					float z = d * sin(ver_ang + sensor_yang) + sensor_z;
+					float x = d * /*sin*/cos(ver_ang + sensor_yang) * cos(hor_ang + sensor_ang) + sensor_x;
+					float y = -1 * (d * /*sin*/cos(ver_ang + sensor_yang) * sin(hor_ang + sensor_ang)) + sensor_y;
+					float z = d * /*cos*/sin(ver_ang + sensor_yang) + sensor_z;
 
-					if(z > 700 || (z > -180.0 && z < 130.0) || (n_valids > 7 && n_conforming > 5))
-					{
+					if (z > 700 || (z > -180.0 && z < 130.0) || (n_valids > 7 && n_conforming > 5)) {
 						// Data proving level floor is accepted with fewer samples
 						// High-z data is also accepted with fewer samples; else we miss obvious small high obstacles
 						// Otherwise, we require enough samples to be sure.
@@ -399,10 +399,9 @@ static void distances_to_objmap(pulutof_frame_t *in)
 						int xspot = (int)(x / (float)TOF3D_HMAP_SPOT_SIZE) + TOF3D_HMAP_XMIDDLE;
 						int yspot = (int)(y / (float)TOF3D_HMAP_SPOT_SIZE) + TOF3D_HMAP_YMIDDLE;
 
-						//printf("DIST = %.0f  x=%.0f  y=%.0f  z=%.0f  xspot=%d  yspot=%d  ver_ang=%.2f  sensor_yang=%.2f  hor_ang=%.2f  sensor_ang=%.2f\n", d, x, y, z, xspot, yspot, ver_ang, sensor_yang, hor_ang, sensor_ang); 
+						//printf("DIST = %.0f  x=%.0f  y=%.0f  z=%.0f  xspot=%d  yspot=%d  ver_ang=%.2f  sensor_yang=%.2f  hor_ang=%.2f  sensor_ang=%.2f\n", d, x, y, z, xspot, yspot, ver_ang, sensor_yang, hor_ang, sensor_ang);
 
-						if(xspot < 0 || xspot >= TOF3D_HMAP_XSPOTS || yspot < 0 || yspot >= TOF3D_HMAP_YSPOTS)
-						{
+						if (xspot < 0 || xspot >= TOF3D_HMAP_XSPOTS || yspot < 0 || yspot >= TOF3D_HMAP_YSPOTS) {
 							//ignored++;
 							continue;
 						}
@@ -442,31 +441,31 @@ static void distances_to_objmap(pulutof_frame_t *in)
 						}
 
 						uint8_t new_val = 0;
-						if( z < -230.0)
+						if (z < -230.0)
 							new_val = TOF3D_BIG_DROP;
-						else if(z < -180.0)
+						else if (z < -180.0)
 							new_val = TOF3D_SMALL_DROP;
-						else if((d < 600.0 && z < 80.0) || z < 120.0)
+						else if ((d < 600.0 && z < 80.0) || z < 120.0)
 							new_val = TOF3D_FLOOR;
-						else if((d < 600.0 && z < 110.0) || z < 150.0)
+						else if ((d < 600.0 && z < 110.0) || z < 150.0)
 							new_val = TOF3D_THRESHOLD;
-						else if(z < 265.0)
+						else if (z < 265.0)
 							new_val = TOF3D_SMALL_ITEM;
-						else if(z < 295.0)
+						else if (z < 295.0)
 							new_val = TOF3D_WALL;
-						else if(z < 1500.0)
+						else if (z < 1500.0)
 							new_val = TOF3D_BIG_ITEM;
-						else if(z < 2050.0)
+						else if (z < 2050.0)
 							new_val = TOF3D_LOW_CEILING;
 
-						if(new_val > tof3ds[tof3d_wr].objmap[yspot*TOF3D_HMAP_XSPOTS+xspot])
-							tof3ds[tof3d_wr].objmap[yspot*TOF3D_HMAP_XSPOTS+xspot] = new_val;
+						if (new_val > tof3ds[tof3d_wr].objmap[yspot * TOF3D_HMAP_XSPOTS + xspot])
+							tof3ds[tof3d_wr].objmap[yspot * TOF3D_HMAP_XSPOTS + xspot] = new_val;
 					}
 
 				}
-				
+
 			}
-			
+
 		}
 	}
 }
@@ -476,29 +475,21 @@ static int calib_sensor_idx = 0;
 
 static void process_pulutof_frame(pulutof_frame_t *in);
 
-void* pulutof_processing_thread()
-{
+void* pulutof_processing_thread() {
 	printf("tof3d: opening tof_zcalib.raw Z axis calibration file for read.\n");
 	FILE* floor = fopen("/home/hrst/rn1-host/tof_zcalib.raw", "r");
-	if(!floor)
-	{
+	if (!floor) {
 		printf("WARNING: Couldn't open tof_zcalib.raw for read. Floor calibration is disabled.\n");
-	}
-	else
-	{
-		fread(hmap_calib, 2, TOF3D_HMAP_XSPOTS*TOF3D_HMAP_YSPOTS, floor);
+	} else {
+		fread(hmap_calib, 2, TOF3D_HMAP_XSPOTS * TOF3D_HMAP_YSPOTS, floor);
 		fclose(floor);
 	}
 
-	while(running)
-	{
+	while (running) {
 		pulutof_frame_t* p_tof;
-		if( (p_tof = get_pulutof_frame()) )
-		{
+		if ((p_tof = get_pulutof_frame())) {
 			process_pulutof_frame(p_tof);
-		}
-		else
-		{
+		} else {
 			usleep(5000);
 		}
 
@@ -596,7 +587,7 @@ static void process_pulutof_frame(pulutof_frame_t *in)
 
 void run_3dtof_floor_calibration()
 {
-	
+
 	calibrating = 1;
 }
 
@@ -959,7 +950,7 @@ static void gen_ang_tables()
 				cur_py += py_per_px;
 				cur_ax -= ax_per_px;
 			}
-			
+
 		}
 
 		outp_ang(lens_quadrant_coords[calyy][GEOCAL_N_X].sens_x, lens_quadrant_coords[calyy][GEOCAL_N_X].sens_y, lens_quadrant_coords[calyy][GEOCAL_N_X].ang_x, -1*lens_quadrant_coords[calyy][GEOCAL_N_X].ang_y);
@@ -988,7 +979,7 @@ static void gen_ang_tables()
 					float second_ay = y_angs[next_py*TOF_XS+pxx];
 					float dax_per_step = (second_ax - first_ax) / (next_py - pyy);
 					float day_per_step = (second_ay - first_ay) / (next_py - pyy);
-					float cur_ax = first_ax - dax_per_step*pyy; 
+					float cur_ax = first_ax - dax_per_step*pyy;
 					float cur_ay = first_ay - day_per_step*pyy;
 
 					for(int iy=0; iy<pyy; iy++)
@@ -1035,7 +1026,7 @@ static void gen_ang_tables()
 			y_angs[out_pyy*TOF_XS+pxx] = -1*y_angs[pyy*TOF_XS+pxx];
 		}
 		// Extrapolate the last line:
-		
+
 		x_angs[(TOF_YS-1)*TOF_XS+pxx] = x_angs[(TOF_YS-2)*TOF_XS+pxx] - (x_angs[(TOF_YS-3)*TOF_XS+pxx] - x_angs[(TOF_YS-2)*TOF_XS+pxx]);
 		y_angs[(TOF_YS-1)*TOF_XS+pxx] = y_angs[(TOF_YS-2)*TOF_XS+pxx] - (y_angs[(TOF_YS-3)*TOF_XS+pxx] - y_angs[(TOF_YS-2)*TOF_XS+pxx]);
 	}
@@ -1048,7 +1039,7 @@ static void gen_ang_tables()
 		{
 			int out_pxx = TOF_XS-pxx-0;
 			x_angs[pyy*TOF_XS+out_pxx] = -1*x_angs[pyy*TOF_XS+pxx];
-			y_angs[pyy*TOF_XS+out_pxx] = y_angs[pyy*TOF_XS+pxx];	
+			y_angs[pyy*TOF_XS+out_pxx] = y_angs[pyy*TOF_XS+pxx];
 		}
 	}
 
@@ -1075,7 +1066,7 @@ static uint8_t txbuf[65536];
 
 static int poll_availability()
 {
-	txbuf[4] = dbg_id&0xff;	
+	txbuf[4] = dbg_id&0xff;
 	struct spi_ioc_transfer xfer;
 	struct response { uint32_t header; uint8_t status;} response;
 
@@ -1103,7 +1094,7 @@ static int poll_availability()
 
 static int read_frame()
 {
-	txbuf[4] = dbg_id&0xff;	
+	txbuf[4] = dbg_id&0xff;
 	struct spi_ioc_transfer xfer;
 	memset(&xfer, 0, sizeof(xfer)); // unused fields need to be initialized zero.
 

@@ -5,7 +5,7 @@
 	Maintainer: Antti Alhonen <antti.alhonen@iki.fi>
 
 	This program is free software; you can redistribute it and/or modify
-	it under the terms of the GNU General Public License version 2, as 
+	it under the terms of the GNU General Public License version 2, as
 	published by the Free Software Foundation.
 
 	This program is distributed in the hope that it will be useful,
@@ -130,7 +130,7 @@ extern chafind_results_t chafind_results;
 #define MAP_SEMISIGNIFICANT_IMGS 2
 extern int map_significance_mode;
 
-typedef enum 
+typedef enum
 {
 	INFO_STATE_UNDEF = -1,
 	INFO_STATE_IDLE = 0,
